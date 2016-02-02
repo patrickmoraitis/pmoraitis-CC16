@@ -5,7 +5,7 @@ Lines not short, not straight, crossing and touching, drawn at random, using fou
 */
 
 function setup() {
-  createCanvas(640, 640);
+  createCanvas(windowWidth, windowHeight);
   frameRate(24);
   background(55);
   
@@ -16,9 +16,9 @@ function setup() {
 }
 
 function draw() {
-  
+
 var COLORS = ['#FF0000', '#00FF00', '#0000FF', '#FFFFFF'];
-stroke(COLORS[floor(random(4))]);
-bezier(random(640), random(640), random(640), random(640), random(640), random(640), random(640), random(640));
+stroke(COLORS[floor(random(COLORS.length))]);
+bezier(random(windowWidth), random(windowWidth), random(windowWidth), random(windowWidth), random(windowHeight), random(windowHeight), random(windowHeight), random(windowHeight));
   
 }
