@@ -1,8 +1,8 @@
 // GLOBAL VARIABLES
 
 //width and height of the canvas
-var w=550;
-var h=400;
+var w=0;
+var h=0;
 
 //arrays that hold the Star and Phos objects (phota is plural of phos)
 var starfield=[];
