@@ -29,13 +29,15 @@ var cardScale = 1;
 //An array containing all the LiveCard objects
 var liveCards = [];
 
-var pickedCardRank;
+var pickedCard = 0;
 
 //short hand deck values, position in array matches with image filename, 1.png is "Ac" for example
 var cardValues = ["Ac", "2c", "3c", "4c", "5c", "6c", "7c", "8c", "9c", "Tc", "Jc", "Qc", "Kc", "Ah", "2h", "3h", "4h", "5h", "6h", "7h", "8h", "9h", "Th", "Jh", "Qh", "Kh", "As", "2s", "3s", "4s", "5s", "6s", "7s", "8s", "9s", "Ts", "Js", "Qs", "Ks", "Ad", "2d", "3d", "4d", "5d", "6d", "7d", "8d", "9d", "Td", "Jd", "Qd", "Kd"];
 
 var cardRanks = ["A", "K", "Q", "J", "10", "9", "8", "7", "6", "5", "4", "3", "2"]
 var cardSuits = ["c", "h", "s", "d"]
+
+var gameStarted = false;
 
 function preload(){
   
@@ -71,7 +73,7 @@ function LiveCard(di){
     
     if(mouseX > this.x && mouseX < this.x+this.w && mouseY > this.y && mouseY < this.y+this.h){
       
-      print(this.id);
+      //print(this.id);
       this.flipCard();
 
     }
@@ -82,14 +84,29 @@ function LiveCard(di){
     if (!this.open){
       this.open = true;
       this.displayCard();
-      pickedCardRank = this.rank;
-
-    }else{
+      if(pickedCard == 0){
+        pickedCard = this.id;
+      }
+      
+      else if(liveCards[pickedCard-1].rank == this.rank){
+        pickedCard = 0;
+        print("Match!");
+      }
+      
+      else if(liveCards[pickedCard-1].rank != this.rank){
+        for (var k = 0; k <= 51; k++) {
+          liveCards[k].open = false;
+          liveCards[k].displayCard();
+        }
+        pickedCard = 0;
+        print("no match :(");
+      }
+    }
+    else{
       this.open = false;
       this.displayCard();
-      pickedCardRank;
+      pickedCard = 0;
     }
-    print(pickedCardRank)
   }
   
   this.updateSize = function(){
@@ -199,9 +216,11 @@ function dealDeck() {
   background(bg);
   
   //add label
-  textSize(24);
+  textSize(20);
   fill(255);
-  text("Take a good look at the cards and remembers where the pairs are!", 20, 20, w, 100);
+  text("Look at the cards and remember where the pairs are!", 20, 10, w, 100);
+    text("Press Spacebar to start & press ESC for a new game", 20, h-40, w, 100);
+
   
   //calculate scale of cards by dividing the canvas height and comparing it to original card height
   cardScale = (h/6) / cardH;
@@ -223,15 +242,36 @@ function dealDeck() {
 
 //this function call the above two, shuffles and deals the deck
 function newDeal() {
+  for (var k = 0; k <= 51; k++) {
+    liveCards[k].open = true;
+  }
   shuffleDeck();
   dealDeck();
 }
 
 
 function mousePressed() {
-
-  for (var k = 0; k <= 51; k++) {
+  if(gameStarted){
+    for (var k = 0; k <= 51; k++) {
       liveCards[k].clicked();
+    }
   }
+
+}
+
+function keyPressed() {
+
+ if(!gameStarted && keyCode === 32){
+  for (var k = 0; k <= 51; k++) {
+      liveCards[k].flipCard();
+  }
+  gameStarted = true;
+ }
+ else if(keyCode === ESCAPE){
+   newDeal();
+  gameStarted = false;
+
+ }
+  
 
 }
