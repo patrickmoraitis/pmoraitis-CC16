@@ -20,9 +20,22 @@ var cardImages = [];
 //deck that holds the unshuffled pack of cards [1,2,3,etc] and then shuffled [4,25,2,etc]
 var deck = [];
 
+//final layout on the table
+var spread = [];
+
+//default scale is 1
+var cardScale = 1;
+
+//An array containing all the LiveCard objects
+var liveCards = [];
+
+var pickedCardRank;
+
 //short hand deck values, position in array matches with image filename, 1.png is "Ac" for example
 var cardValues = ["Ac", "2c", "3c", "4c", "5c", "6c", "7c", "8c", "9c", "Tc", "Jc", "Qc", "Kc", "Ah", "2h", "3h", "4h", "5h", "6h", "7h", "8h", "9h", "Th", "Jh", "Qh", "Kh", "As", "2s", "3s", "4s", "5s", "6s", "7s", "8s", "9s", "Ts", "Js", "Qs", "Ks", "Ad", "2d", "3d", "4d", "5d", "6d", "7d", "8d", "9d", "Td", "Jd", "Qd", "Kd"];
 
+var cardRanks = ["A", "K", "Q", "J", "10", "9", "8", "7", "6", "5", "4", "3", "2"]
+var cardSuits = ["c", "h", "s", "d"]
 
 function preload(){
   
@@ -40,38 +53,102 @@ function preload(){
   
 }
 
+function LiveCard(di){
+  
+  this.id = di;
+  this.x = (((w*.9)/13)*(floor(this.id % 13)))+(w*.05);
+  this.y = (((h*.8)/4)*floor(this.id / 13))+(h*.1);
+  this.w = cardW*cardScale;
+  this.h = cardH*cardScale;
+  this.rank = cardRanks[(this.id-1)%13];
+  this.suit = cardSuits[floor(this.id/13)-1];
+  this.face = cardImages[this.id-1];
+  this.back = cardBack;
+  this.open = true;
+  this.img;
+  
+  this.clicked = function(){
+    
+    if(mouseX > this.x && mouseX < this.x+this.w && mouseY > this.y && mouseY < this.y+this.h){
+      
+      print(this.id);
+      this.flipCard();
+
+    }
+  }
+  
+  this.flipCard = function(){
+    
+    if (!this.open){
+      this.open = true;
+      this.displayCard();
+      pickedCardRank = this.rank;
+
+    }else{
+      this.open = false;
+      this.displayCard();
+      pickedCardRank;
+    }
+    print(pickedCardRank)
+  }
+  
+  this.updateSize = function(){
+    
+    this.posi = deck[this.id-1];
+
+    this.x = (((w*.9)/13)*(floor(this.posi % 13)))+(w*.05);
+    this.y = (((h*.8)/4)*floor(this.posi / 13))+(h*.1);
+    this.w = cardW*cardScale;
+    this.h = cardH*cardScale;
+    
+  }
+  
+  this.displayCard = function(){
+    
+    if (this.open){
+      this.img = image(this.face, this.x, this.y, this.w, this.h);
+    }else{
+      this.img = image(this.back, this.x, this.y, this.w, this.h);
+    }
+    
+  }
+  
+}
 
 function setup() {
 
   //slow frame rate to avoid memory crashes
-  //frameRate(12);
-  noLoop();
+  frameRate(12);
+  //noLoop();
   //set w & h as reference to window size and create equally sized canvas
   w = windowWidth
   h = windowHeight
   createCanvas(w, h);
-
-  //push the integers 0 through 51 into the array
-  for (var di = 0; di <= 51; di++) {
-    deck.push(di);
-  }
   
   //get default card size and store it for later, assumes all image assets have the same dimensions
   cardW = cardImages[1].width
   cardH = cardImages[1].height
   
+  var cardScale = (h/6) / cardH;
+  
+  //push the integers 0 through 51 into the array
+  for (var di = 0; di <= 51; di++) {
+    deck.push(di);
+    var liveCard = new LiveCard(di+1);
+    liveCards.push(liveCard);
+  }
+
   //print(cardW)//print(deck)//print(cardH)
   
   //add first view of BG & cards to screen
-  dealDeck();
-
+  newDeal();
+  
 }
 
-//every frame, clear some memory, redraw the felt background and respread the cards on top
 function draw() {
- // clear();
-//  background(bg);
-//  dealDeck();
+
+ // print(mouseX);
+
 }
 
 //AUX FUNCTIONS
@@ -124,46 +201,37 @@ function dealDeck() {
   //add label
   textSize(24);
   fill(255);
-  text("Click anywhere to shuffle the cards", 20, 20, w, 100);
+  text("Take a good look at the cards and remembers where the pairs are!", 20, 20, w, 100);
   
-  //calculate scale of cards by dividing the canvas height by the 4 rows and comparing it to original card height
-  var cardScale = (h/6) / cardH;
+  //calculate scale of cards by dividing the canvas height and comparing it to original card height
+  cardScale = (h/6) / cardH;
   
-  if(cardScale > 2){cardScale = 2}
+  if(cardScale > 1){cardScale = 1}
   else if(cardScale < .1){cardScale = .1}
   
   //print(cardScale);// 1.32 , .56, etc
   
-  //outer loop represents the 4 rows (suits)
-  for (var k = 0; k < 4; k++) {
-    //inner loop, the 13 columns (ranks)
-    for (var j = 1; j <= 13; j++) {
-      
-      //store pick in thisCard var for easy access
-      //j-1 picks the rank and 13*k refers to the suit. Add both rank & suit to get the exact card
-      
-      var thisI = deck[(j-1)+(13*k)];
-      
-      var thisCard = cardImages[thisI];
-      
-      //print(thisI)
-      
-      //print(thisCard.width)
-      
-      //add card to view, card size is based on window size and margins are made so all cards fit on screen
-      image(thisCard, (((w*.8)/13)*(j-1))+(w*.1), (((h*.8)/4)*k)+(h*.1), cardW*cardScale, cardH*cardScale)
-    
-    }//close inner for loop
-  }//close outer for loop
+  //update display of all cards based on data changes
+  for (var k = 0; k <= 51; k++) {
+     // liveCards[k].open = true;
+      liveCards[k].updateSize();
+      liveCards[k].displayCard();
+  }
+  
+  
 }//close dealDeck()
 
 //this function call the above two, shuffles and deals the deck
-function dealIt() {
+function newDeal() {
   shuffleDeck();
   dealDeck();
 }
 
-//debugging for nnow
+
 function mousePressed() {
-  dealIt();
+
+  for (var k = 0; k <= 51; k++) {
+      liveCards[k].clicked();
+  }
+
 }
